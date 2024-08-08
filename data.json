@@ -1,0 +1,151 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$3HYsk3ePjNLQL9a6YZjG9t$aH1c0UpRvbjhriBs2hEqHQmaDHpFoYvZ/w1IlTfwdz8=",
+      "last_login": "2024-08-08T13:18:28.241Z",
+      "is_superuser": true,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-08-08T13:18:16.220Z",
+      "email": "emikgal2507@gmail.com",
+      "phone": null,
+      "city": null,
+      "avatar": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "password": "123",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-08-08T13:21:35Z",
+      "email": "test@test.com",
+      "phone": null,
+      "city": null,
+      "avatar": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "date": "2024-08-08T13:27:22Z",
+      "course": 2,
+      "lesson": null,
+      "summ": 150000,
+      "payment_method": "cashless"
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 2,
+    "fields": {
+      "user": 2,
+      "date": "2024-08-07T13:27:40Z",
+      "course": null,
+      "lesson": 2,
+      "summ": 1299,
+      "payment_method": "cash"
+    }
+  },
+  {
+    "model": "users.payment",
+    "pk": 3,
+    "fields": {
+      "user": 2,
+      "date": "2024-08-07T13:28:04Z",
+      "course": null,
+      "lesson": 3,
+      "summ": 1250,
+      "payment_method": "cash"
+    }
+  },
+  {
+    "model": "materials.course",
+    "pk": 2,
+    "fields": {
+      "name": "Курс 1",
+      "description": "123",
+      "preview": ""
+    }
+  },
+  {
+    "model": "materials.course",
+    "pk": 3,
+    "fields": {
+      "name": "Курс 2",
+      "description": "Описание 2",
+      "preview": ""
+    }
+  },
+  {
+    "model": "materials.lesson",
+    "pk": 2,
+    "fields": {
+      "name": "Урок 1. Основы Python",
+      "description": "Описание урока 1",
+      "preview": "",
+      "video_link": "https://www.mysite.ru/lesson1",
+      "course": 2
+    }
+  },
+  {
+    "model": "materials.lesson",
+    "pk": 3,
+    "fields": {
+      "name": "Урок 2.",
+      "description": "Описание урока 2",
+      "preview": "",
+      "video_link": "https://www.mysite.ru/lesson2",
+      "course": 2
+    }
+  },
+  {
+    "model": "materials.lesson",
+    "pk": 4,
+    "fields": {
+      "name": "Урок 3.",
+      "description": "Описание урока 3",
+      "preview": "",
+      "video_link": "https://www.mysite.ru/lesson3",
+      "course": 2
+    }
+  },
+  {
+    "model": "materials.lesson",
+    "pk": 6,
+    "fields": {
+      "name": "Урок 1.",
+      "description": "Описание урока 1",
+      "preview": "",
+      "video_link": "https://www.mysite.ru/lesson1",
+      "course": 3
+    }
+  },
+  {
+    "model": "materials.lesson",
+    "pk": 7,
+    "fields": {
+      "name": "Урок 2.",
+      "description": "Описание урока 2",
+      "preview": "",
+      "video_link": "https://www.mysite.ru/lesson2",
+      "course": 3
+    }
+  }
+]
