@@ -4,7 +4,8 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 
 from users.models import User, Payment
-from users.serializes import UserSerializer, PaymentSerializer, UserRegisterSerializer
+from users.permissions import IsSelfUser
+from users.serializes import SelfUserSerializer, AnotherUserSerializer, PaymentSerializer, UserRegisterSerializer
 
 
 # Create your views here.
@@ -19,24 +20,28 @@ class UserCreateAPIView(generics.CreateAPIView):
 
 class UserListAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = UserSerializer
+    serializer_class = AnotherUserSerializer
     queryset = User.objects.all()
 
 
 class UserRetrieveAPIView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = UserSerializer
     queryset = User.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.user.pk == self.kwargs['pk']:
+            return SelfUserSerializer
+        return AnotherUserSerializer
 
 
 class UserUpdateAPIView(generics.UpdateAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, IsSelfUser]
+    serializer_class = SelfUserSerializer
     queryset = User.objects.all()
 
 
 class UserDestroyAPIView(generics.DestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSelfUser]
     queryset = User.objects.all()
 
 
