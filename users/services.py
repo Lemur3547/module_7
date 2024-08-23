@@ -1,6 +1,10 @@
+import os
+from dotenv import load_dotenv
 import stripe
+from config.settings import BASE_DIR
 
-stripe.api_key = "sk_test_51PqymIP32io8mk7XYu5ztjQj0484NL65d4xy6Cir7ZJJUSqloNhgUASzAMwHeq4gmiPNjXEum3gr63CEivirDOHq00sdKgOm9S"
+load_dotenv(BASE_DIR / '.env', override=True)
+stripe.api_key = os.getenv('stripe_api_key')
 
 
 def create_product(product):
