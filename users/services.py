@@ -25,3 +25,10 @@ def create_session(price):
         mode="payment",
     )
     return session.get('id'), session.get('url'), session.get('payment_method_types')[0]
+
+
+def get_payment_status(payment_id):
+    response = stripe.checkout.Session.retrieve(
+        payment_id
+    )
+    return response.get('payment_status'), response.get('status')

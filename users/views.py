@@ -5,11 +5,13 @@ from rest_framework import viewsets, generics
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from users.models import User, Payment
 from users.permissions import IsSelfUser
 from users.serializes import SelfUserSerializer, AnotherUserSerializer, PaymentSerializer, UserRegisterSerializer
-from users.services import create_product, create_price, create_session
+from users.services import create_product, create_price, create_session, get_payment_status
 
 
 # Create your views here.
@@ -76,3 +78,13 @@ class PaymentViewSet(viewsets.ModelViewSet):
         payment.payment_method = payment_method
         payment.save()
 
+
+class PaymentStatusAPIView(APIView):
+    def get(self, *args, **kwargs):
+        payment_pk = self.request.parser_context['kwargs']['pk']
+        payment_id = Payment.objects.get(pk=payment_pk).session_id
+        payment_status, status = get_payment_status(payment_id)
+        return Response({
+            'payment_status': payment_status,
+            'status': status
+        })
