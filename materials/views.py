@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from materials.models import Course, Lesson, Subscription
 from materials.paginators import MaterialsPaginator
 from materials.serializes import CourseSerializer, LessonSerializer, CreateCourseSerializer
+from materials.tasks import update_course_email
 from users.permissions import IsModerator, IsOwner
 
 
@@ -39,6 +40,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         else:
             queryset = Course.objects.filter(user=self.request.user)
         return queryset
+
+    def perform_update(self, serializer):
+        course = serializer.save()
+        subscriptions = Subscription.objects.filter(course=course)
+        user_list = [subs.user.email for subs in subscriptions]
+        update_course_email.delay(course.name, user_list)
+        course.save()
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
@@ -81,6 +89,8 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
 
 
 class SubscriptionAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, *args, **kwargs):
         user = self.request.user
         course_id = self.request.parser_context['kwargs']['pk']
