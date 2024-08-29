@@ -12,8 +12,8 @@ class LessonSerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    lessons_count = serializers.SerializerMethodField()
-    lessons = LessonSerializer(many=True, source='lesson_set')
+    lessons_count = serializers.SerializerMethodField(read_only=True)
+    lessons = LessonSerializer(many=True, source='lesson_set', read_only=True)
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -26,8 +26,3 @@ class CourseSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, instance):
         return Subscription.objects.filter(user=self.context['request'].user, course=instance.pk).exists()
 
-
-class CreateCourseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Course
-        fields = '__all__'

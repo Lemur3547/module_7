@@ -4,16 +4,19 @@ from celery import shared_task
 from django.conf import settings
 from django.core.mail import send_mail
 
+from materials.models import Subscription
 from users.models import User
 
 
 @shared_task
-def update_course_email(course, users_list):
+def update_course_email(course):
+    subscriptions = Subscription.objects.filter(course=course)
+    user_list = [subs.user.email for subs in subscriptions]
     send_mail(
         subject='Обновление курса!',
-        message=f'Для курса {course} вышло обновление. Зайдите и посмотрите сейчас!',
+        message=f'Для курса {course.name} вышло обновление. Зайдите и посмотрите сейчас!',
         from_email=settings.EMAIL_HOST_USER,
-        recipient_list=users_list,
+        recipient_list=user_list,
         fail_silently=True
     )
 
