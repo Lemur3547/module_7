@@ -1,4 +1,8 @@
+import datetime
+
+from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -6,7 +10,8 @@ from rest_framework.views import APIView
 
 from materials.models import Course, Lesson, Subscription
 from materials.paginators import MaterialsPaginator
-from materials.serializes import CourseSerializer, LessonSerializer, CreateCourseSerializer
+from materials.serializes import CourseSerializer, LessonSerializer
+from materials.tasks import update_course_email
 from users.permissions import IsModerator, IsOwner
 
 
@@ -15,6 +20,7 @@ from users.permissions import IsModerator, IsOwner
 class CourseViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     pagination_class = MaterialsPaginator
+    serializer_class = CourseSerializer
 
     def get_permissions(self):
         if self.action in ['retrieve', 'update']:
@@ -28,11 +34,6 @@ class CourseViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return CreateCourseSerializer
-        return CourseSerializer
-
     def get_queryset(self):
         if self.request.user.groups.filter(name='moderator').exists():
             queryset = Course.objects.all()
@@ -40,13 +41,33 @@ class CourseViewSet(viewsets.ModelViewSet):
             queryset = Course.objects.filter(user=self.request.user)
         return queryset
 
+    def perform_update(self, serializer):
+        course = serializer.save()
+        if course.last_update:
+            if timezone.now() - course.last_update > datetime.timedelta(hours=4):
+                update_course_email.delay(course)
+        else:
+            update_course_email.delay(course)
+        course.last_update = timezone.now()
+        course.save()
+
 
 class LessonCreateAPIView(generics.CreateAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated, ~IsModerator]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        lesson = serializer.save()
+        lesson.user = self.request.user
+        if lesson.course.last_update:
+            if timezone.now() - lesson.course.last_update > datetime.timedelta(hours=4):
+                update_course_email.delay(lesson.course)
+        else:
+            update_course_email.delay(lesson.course)
+        lesson.course.last_update = timezone.now()
+        lesson.course.save()
+        lesson.last_update = timezone.now()
+        lesson.save()
 
 
 class LessonListAPIView(generics.ListAPIView):
@@ -73,6 +94,18 @@ class LessonUpdateAPIView(generics.UpdateAPIView):
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated, IsModerator | IsOwner]
 
+    def perform_update(self, serializer):
+        lesson = serializer.save()
+        if lesson.course.last_update:
+            if timezone.now() - lesson.course.last_update > datetime.timedelta(hours=4):
+                update_course_email.delay(lesson.course)
+        else:
+            update_course_email.delay(lesson.course)
+        lesson.course.last_update = timezone.now()
+        lesson.course.save()
+        lesson.last_update = timezone.now()
+        lesson.save()
+
 
 class LessonDestroyAPIView(generics.DestroyAPIView):
     serializer_class = LessonSerializer
@@ -81,6 +114,8 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
 
 
 class SubscriptionAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, *args, **kwargs):
         user = self.request.user
         course_id = self.request.parser_context['kwargs']['pk']
@@ -94,4 +129,3 @@ class SubscriptionAPIView(APIView):
             Subscription.objects.create(user=user, course=course_item)
             message = 'подписка добавлена'
         return Response({"message": message})
-
