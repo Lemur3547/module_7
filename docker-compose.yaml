@@ -1,6 +1,12 @@
 version: '3'
 
 services:
+  redis:
+    image: redis:latest
+    restart: on-failure
+    expose:
+      - "6379"
+
   db:
     image: postgres
     restart: on-failure
@@ -27,6 +33,38 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
+    env_file:
+      - .env
+
+  celery:
+    build: .
+    tty: true
+    environment:
+      - C_FORCE_ROOT=true
+    command: celery -A config worker -l INFO
+    restart: on-failure
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - app
+      - db
+    env_file:
+      - .env
+
+  celery-beat:
+    build: .
+    tty: true
+    command: celery -A config beat -l INFO
+    restart: on-failure
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - app
+      - db
+    env_file:
+      - .env
 
 volumes:
   pg_data:
